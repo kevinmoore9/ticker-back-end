@@ -24,7 +24,7 @@ class User < ActiveRecord::Base
   after_initialize :ensure_session_token
   before_validation :ensure_session_token_uniqueness
 
-  has_one :balance
+  has_many :balances
   has_many :trades
 
   def password=(password)
@@ -60,6 +60,53 @@ class User < ActiveRecord::Base
       end
     end
     holdings
+  end
+
+  def buy_stock(ticker_sym, quantity)
+    if Stock.ensure_stock(ticker_sym)
+      stock = Stock.find_by(symbol: ticker_sym)
+      cost = stock.price * quantity
+      old_balance = self.balances.most_recent
+      cash = old_balance.cash
+      raise "insufficient cash for this trade" if cash < cost
+      purchase = Trade.new(trade_type: 'BUY',
+                           user_id: self.id,
+                           volume: quantity,
+                           stock_id: stock.id,
+                           value: cost)
+      new_balance = Balance.new(user_id: self.id,
+                                cash: cash - cost,
+                                equity: old_balance.equity + cost)
+      ActiveRecord::Base.transaction do
+        purchase.save!
+        new_balance.save!
+      end
+      true
+    else #stock not found
+      false
+    end
+  end
+
+  def sell_stock(ticker_sym, quantity)
+    stock = Stock.find_by(symbol: ticker_sym)
+    my_stocks = self.stocks
+    raise "You don't own this stock" unless my_stocks.include?(stock.id)
+    raise "You don't own that many shares" unless my_stocks[stock.id] >= quantity
+    income = quantity * stock.price
+    old_balance = self.balances.most_recent
+    sale = Trade.new(trade_type: 'SELL',
+                     user_id: self.id,
+                     volume: quantity,
+                     stock_id: stock.id,
+                     value: income)
+    new_balance = Balance.new(user_id: self.id,
+                              cash: old_balance.cash + income,
+                              equity: old_balance.equity - income)
+    ActiveRecord::Base.transaction do
+      sale.save!
+      new_balance.save!
+    end
+    true
   end
 
   def self.find_by_credentials(email, password)
