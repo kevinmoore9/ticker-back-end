@@ -1,7 +1,7 @@
 class Api::TradesController < ApplicationController
 
   def create
-    if "2" == trade_params[:user_id]
+    if logged_in?
       if trade_params[:trade_type] == "BUY"
         current_user.buy_stock(trade_params[:ticker_sym],
                                trade_params[:volume])

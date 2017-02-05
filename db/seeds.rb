@@ -23,3 +23,4 @@ u.buy_stock("FB", 50)
 
 u2.buy_stock("BUD", 100)
 u2.buy_stock("DEO", 50)
+u2.buy_stock("SAM", 50)
