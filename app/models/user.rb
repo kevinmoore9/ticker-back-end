@@ -92,17 +92,17 @@ class User < ActiveRecord::Base
   end
 
   def sell_stock(ticker_sym, quantity)
-    my_stocks = self.stocks
-    raise "You don't own this stock" unless my_stocks[ticker_sym]
-    unless my_stocks[ticker_sym][:num_shares] >= quantity
+    stock = self.stocks[ticker_sym]
+    raise "You don't own this stock" unless stock
+    unless stock[:num_shares] >= quantity
       raise "You don't own that many shares"
     end
-    income = quantity * stock.price
+    income = quantity * stock[:price]
     old_balance = self.balances.most_recent
     sale = Trade.new(trade_type: 'SELL',
                      user_id: self.id,
                      volume: quantity,
-                     stock_id: stock.id,
+                     stock_id: Stock.find_by(symbol: ticker_sym).id,
                      value: income)
     new_balance = Balance.new(user_id: self.id,
                               cash: old_balance.cash + income,
