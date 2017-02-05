@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170202021500) do
+ActiveRecord::Schema.define(version: 20170205021418) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,10 +27,11 @@ ActiveRecord::Schema.define(version: 20170202021500) do
   add_index "balances", ["user_id"], name: "index_balances_on_user_id", using: :btree
 
   create_table "stocks", force: :cascade do |t|
-    t.string   "symbol",     null: false
-    t.float    "price",      null: false
+    t.string   "symbol",       null: false
+    t.float    "price",        null: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "company_name"
   end
 
   add_index "stocks", ["symbol"], name: "index_stocks_on_symbol", using: :btree
