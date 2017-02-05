@@ -34,16 +34,20 @@ class Stock < ActiveRecord::Base
     else
       stock = Stock.new(symbol: ticker_sym)
       quote =  StockQuote::Stock.quote(ticker_sym)
-      if quote.bid
-        stock.price = quote.bid
-      elsif quote.close
-        stock.price = quote.close
-      else
-        stock.price = (quote.days_high + quote.days_low) / 2
-      end
-      stock.company_name = quote.name
-      if stock.save
-        true
+      if quote.name
+        if quote.bid
+          stock.price = quote.bid
+        elsif quote.close
+          stock.price = quote.close
+        else
+          stock.price = (quote.days_high + quote.days_low) / 2
+        end
+        stock.company_name = quote.name
+        if stock.save
+          true
+        else
+          false
+        end
       else
         false
       end

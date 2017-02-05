@@ -9,8 +9,6 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #
-
-
 class User < ActiveRecord::Base
 
   attr_reader :password
@@ -32,22 +30,24 @@ class User < ActiveRecord::Base
     @password = password
   end
 
-  def stocks #returns a hash where keys are ticker symbols and vals are numbers of shares
+  def stocks #returns a hash where keys are ticker symbols and val is
+    # another hash containing :price, :num_shares, and :name
     buyHash = {}
     sellHash = {}
 
-    Trade.where(user_id: self.id).each do |tr|
+    trades = Trade.where(user_id: self.id).includes(:stock)
+    trades.each do |tr|
       if tr.trade_type == 'BUY'
-        if buyHash[tr.stock_id]
-          buyHash[tr.stock_id] += tr.volume
+        if buyHash[tr.stock.symbol]
+          buyHash[tr.stock.symbol] += tr.volume
         else
-          buyHash[tr.stock_id] = tr.volume
+          buyHash[tr.stock.symbol] = tr.volume
         end
       elsif tr.trade_type == 'SELL'
-        if sellHash[tr.stock_id]
-          sellHash[tr.stock_id] += tr.volume
+        if sellHash[tr.stock.symbol]
+          sellHash[tr.stock.symbol] += tr.volume
         else
-          sellHash[tr.stock_id] = tr.volume
+          sellHash[tr.stock.symbol] = tr.volume
         end
       end
     end
@@ -56,7 +56,11 @@ class User < ActiveRecord::Base
     buyHash.keys.each do |sym|
       sold = sellHash[sym] ? sellHash[sym] : 0
       if buyHash[sym] - sold > 0
-        holdings[sym] = buyHash[sym] - sold
+        stock = Stock.find_by(symbol: sym)
+        shares = buyHash[sym] - sold
+        holdings[sym] = { price: stock.price,
+                          name: stock.company_name,
+                          num_shares: shares }
       end
     end
     holdings
@@ -88,10 +92,11 @@ class User < ActiveRecord::Base
   end
 
   def sell_stock(ticker_sym, quantity)
-    stock = Stock.find_by(symbol: ticker_sym)
     my_stocks = self.stocks
-    raise "You don't own this stock" unless my_stocks.include?(stock.id)
-    raise "You don't own that many shares" unless my_stocks[stock.id] >= quantity
+    raise "You don't own this stock" unless my_stocks[ticker_sym]
+    unless my_stocks[ticker_sym][:num_shares] >= quantity
+      raise "You don't own that many shares"
+    end
     income = quantity * stock.price
     old_balance = self.balances.most_recent
     sale = Trade.new(trade_type: 'SELL',

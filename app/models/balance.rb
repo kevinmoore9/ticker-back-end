@@ -22,8 +22,8 @@ class Balance < ActiveRecord::Base
       cash = user.balances.most_recent.cash
       equity = 0
       owned_stocks = user.stocks
-      owned_stocks.each do |stock_id, num_shares|
-        equity += num_shares * Stock.find_by(id: stock_id).price
+      owned_stocks.each do |ticker_sym, details|
+        equity += details.price * details.num_shares
       end
       new_balance = Balance.new(user_id: user.id,
                                 cash: cash,
