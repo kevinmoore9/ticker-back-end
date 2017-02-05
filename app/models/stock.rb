@@ -2,15 +2,16 @@
 #
 # Table name: stocks
 #
-#  id         :integer          not null, primary key
-#  symbol     :string           not null
-#  price      :float            not null
-#  created_at :datetime
-#  updated_at :datetime
+#  id           :integer          not null, primary key
+#  symbol       :string           not null
+#  price        :float            not null
+#  created_at   :datetime
+#  updated_at   :datetime
+#  company_name :string
 #
 
 class Stock < ActiveRecord::Base
-  validates :symbol, :price, presence: true
+  validates :symbol, :company_name, :price, presence: true
   has_many :trades
 
   def self.update_quotes
@@ -33,15 +34,20 @@ class Stock < ActiveRecord::Base
     else
       stock = Stock.new(symbol: ticker_sym)
       quote =  StockQuote::Stock.quote(ticker_sym)
-      if quote.bid
-        stock.price = quote.bid
-      elsif quote.close
-        stock.price = quote.close
-      else
-        stock.price = (quote.days_high + quote.days_low) / 2
-      end
-      if stock.save
-        true
+      if quote.name
+        if quote.bid
+          stock.price = quote.bid
+        elsif quote.close
+          stock.price = quote.close
+        else
+          stock.price = (quote.days_high + quote.days_low) / 2
+        end
+        stock.company_name = quote.name
+        if stock.save
+          true
+        else
+          false
+        end
       else
         false
       end
