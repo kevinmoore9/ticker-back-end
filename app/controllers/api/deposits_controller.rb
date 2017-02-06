@@ -6,7 +6,6 @@ class Api::DepositsController < ApplicationController
     render "api/users/show"
   end
 
-
   private
 
   def deposit_params
