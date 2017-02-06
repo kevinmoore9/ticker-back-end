@@ -1,19 +1,16 @@
 class Api::TradesController < ApplicationController
 
   def create
-    if logged_in?
+    if ['BUY', 'SELL'].include?(trade_params[:trade_type])
+      @user = User.find_by(id: trade_params[:user_id])
       if trade_params[:trade_type] == "BUY"
-        current_user.buy_stock(trade_params[:ticker_sym],
-                               trade_params[:volume])
-      elsif trade_params[:trade_type] == "SELL"
-        current_user.sell_stock(trade_params[:ticker_sym],
-                               trade_params[:volume])
-      else
-        render json: { base: ['trade type must be specified'] }, status: 422
+        user.buy_stock(trade_params[:ticker_sym], trade_params[:volume])
+      else # must be SELL
+        user.sell_stock(trade_params[:ticker_sym], trade_params[:volume])
       end
+      render "api/users/show"
     else
-      render json: { base: ['Only logged in users can trade stocks']},
-        status: 422
+      render json: { base: ['invalid trade type'] }, status: 422
     end
   end
 
