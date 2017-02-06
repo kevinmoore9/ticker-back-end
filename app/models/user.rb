@@ -24,6 +24,7 @@ class User < ActiveRecord::Base
 
   has_many :balances
   has_many :trades
+  has_many :deposits
 
   def password=(password)
     self.password_digest = BCrypt::Password.create(password)
@@ -112,6 +113,16 @@ class User < ActiveRecord::Base
       new_balance.save!
     end
     true
+  end
+
+  def deposit_money(amount)
+    balance = self.balances.most_recent
+    balance.cash += amount
+    deposit = Deposit.new(user_id: self.id, amount: amount)
+    ActiveRecord::Base.transaction do
+      balance.save
+      deposit.save
+    end
   end
 
   def self.find_by_credentials(email, password)

@@ -25,5 +25,3 @@ class Api::UsersController < ApplicationController
 
 
 end
-
-# Remove show route
