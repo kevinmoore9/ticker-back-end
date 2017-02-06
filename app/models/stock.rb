@@ -42,7 +42,6 @@ class Stock < ActiveRecord::Base
         else
           stock.price = (quote.days_high + quote.days_low) / 2
         end
-        debugger
         stock.company_name = quote.name
         if stock.save
           true
