@@ -23,7 +23,7 @@ class Balance < ActiveRecord::Base
       equity = 0
       owned_stocks = user.stocks
       owned_stocks.each do |ticker_sym, details|
-        equity += details.price * details.num_shares
+        equity += details[:price] * details[:num_shares]
       end
       new_balance = Balance.new(user_id: user.id,
                                 cash: cash,
