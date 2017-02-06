@@ -9,12 +9,12 @@
 u = User.new(email: "aa@aa.com", password: "password")
 u.save
 
-Balance.create(user_id: u.id, equity: 0, cash: 50000)
+Balance.create(user_id: u.id, equity: 0, cash: 500000)
 
 u2 = User.new(email: "test@testing.com", password: "111111")
 u2.save
 
-Balance.create(user_id: u2.id, equity: 0, cash: 20000)
+Balance.create(user_id: u2.id, equity: 0, cash: 200000)
 
 u.buy_stock("AAPL", 100)
 u.buy_stock("TSLA", 10)
