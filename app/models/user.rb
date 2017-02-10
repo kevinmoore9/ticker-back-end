@@ -31,6 +31,10 @@ class User < ActiveRecord::Base
     @password = password
   end
 
+  def total_deposits
+    self.deposits.sum("amount")
+  end
+
   def stocks #returns a hash where keys are ticker symbols and val is
     # another hash containing :price, :num_shares, and :name
     buyHash = {}
